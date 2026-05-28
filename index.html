@@ -31,13 +31,13 @@
   <header>
       <div style="display:flex; gap:12px;">
         <div class="filter-box" style="flex:2;">
-          <select id="filter-region" style="width:100%; padding:5px;">
+          <select id="filter-region" style="width:80%;">
             <option value="all">Semua Tempat Lahir – </option>
           </select>
         </div>
 
         <div class="filter-box" style="flex:1;">
-<select id="filter-gender">
+<select id="filter-gender"  style="width:80%;" >
   <option value="all">Semua Jenis Kelamin</option>
   <option value="Laki-laki">Laki-laki</option>
   <option value="Perempuan">Perempuan</option>
@@ -51,7 +51,7 @@
         </div>
 
 <div class="filter-box">
-  <select id="filter-mode-select" onchange="currentFilterMode = this.value; applyIntersectionFilter();" style="padding: 5px;">
+  <select id="filter-mode-select" onchange="currentFilterMode = this.value; applyIntersectionFilter();" style="width:80%;">
     <option value="union">Tampilkan Semua (0 Tokoh)</option>
     <option value="intersection">Hanya Irisan (0 Tokoh)</option>
   </select>
