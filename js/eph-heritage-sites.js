@@ -95,8 +95,6 @@ function loadPrimaryData() {
     // Penempatannya di sini memastikan data kotor dari Wikidata akan tertimpa secara permanen.
     PetaProvinsi['Q252'] = 'Indonesia (Umum)';
     PetaProvinsi['Q188161'] = 'Hindia Belanda';
-    PetaProvinsi['Q1185572'] = 'Batavia';
-    PetaProvinsi['Q3208'] = 'DKI Jakarta'; // Tambahan ekstra pengaman untuk pusat pemerintahan
     // -------------------------------------------------
 
     // C. Data selesai, bangun peta dan matikan layar loading
