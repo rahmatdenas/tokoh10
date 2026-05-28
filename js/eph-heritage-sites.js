@@ -390,14 +390,10 @@ function generateRecordDetails(qid) {
   let record = Records[qid];
   
   let titleHtml = `<h1 id="title-header-${qid}">Memuat nama...</h1>`;
-let figureHtml = generateFigure(record.imageFilename);
+  let figureHtml = generateFigure(record.imageFilename);
 
-  let articleHtml;
-  if (record.articleTitle) {
-    articleHtml = '<div class="article main-text loading"><div class="loader"></div></div>';
-  } else {
-    articleHtml = '<div class="article main-text nodata"><p>Tokoh ini belum memiliki artikel Wikipedia berbahasa Indonesia.</p></div>';
-  }
+  // KITA UBAH: Selalu paksa tampilkan animasi loading karena kita akan mencarinya secara live
+  let articleHtml = '<div class="article main-text loading"><div class="loader"></div></div>';
 
   let infoHtml = '<h2>Informasi Profil</h2><ul class="designations">';
   infoHtml += `<li><p><strong>Tempat Lahir:</strong> <span id="lokasi-${qid}">Memuat lokasi...</span> (${record.provinsiLabel})</p></li>`;
@@ -412,7 +408,7 @@ let figureHtml = generateFigure(record.imageFilename);
 
   let panelElem = document.createElement('div');
   panelElem.innerHTML =
-    `<a class="main-wikidata-link" href="https://www.wikidata.org/wiki/${qid}" title="Lihat di Wikidata">` +
+    `<a class="main-wikidata-link" href="https://www.wikidata.org/wiki/${qid}" target="_blank" title="Lihat di Wikidata">` +
     '<img src="img/wikidata_tiny_logo.png" alt="[Lihat item Wikidata]" /></a>' +
     titleHtml + figureHtml + articleHtml + infoHtml;  
   
@@ -421,11 +417,13 @@ let figureHtml = generateFigure(record.imageFilename);
   let queryIds = qid;
   if (record.tempatLahirQid) queryIds += `|${record.tempatLahirQid}`;
 
-  fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${queryIds}&props=labels&languages=id|en&format=json&origin=*`)
+  // KUNCI UTAMA: Kita tambahkan "sitelinks" ke dalam request Wikidata!
+  fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${queryIds}&props=labels|sitelinks&languages=id|en&format=json&origin=*`)
     .then(res => res.json())
     .then(data => {
         let entPerson = data.entities[qid];
         if (entPerson) {
+          // 1. Tarik Nama Asli
           let realName = entPerson.labels.id ? entPerson.labels.id.value : (entPerson.labels.en ? entPerson.labels.en.value : qid);
           
           let headerEl = document.getElementById(`title-header-${qid}`);
@@ -437,8 +435,19 @@ let figureHtml = generateFigure(record.imageFilename);
           if(record.mapMarker) record.mapMarker.setPopupContent(realName);
           record.title = realName;
           record.indexTitle = realName;
+
+          // 2. PEMICU WIKIPEDIA OTOMATIS: Tarik artikel langsung lewat Sitelink Wikidata
+          let articleContainer = panelElem.querySelector('.article');
+          if (entPerson.sitelinks && entPerson.sitelinks.idwiki) {
+              let wikiTitle = entPerson.sitelinks.idwiki.title;
+              displayArticleExtract(wikiTitle, articleContainer);
+          } else {
+              articleContainer.innerHTML = '<p><em>Tokoh ini belum memiliki artikel Wikipedia berbahasa Indonesia.</em></p>';
+              articleContainer.classList.remove('loading');
+          }
         }
 
+        // 3. Tarik Nama Kota Kelahiran
         if (record.tempatLahirQid) {
           let entCity = data.entities[record.tempatLahirQid];
           if (entCity) {
@@ -448,9 +457,7 @@ let figureHtml = generateFigure(record.imageFilename);
           }
         }
     })
-    .catch(err => console.log("Gagal memuat label", err));
-
-  if (record.articleTitle) displayArticleExtract(record.articleTitle, panelElem.querySelector('.article'));
+    .catch(err => console.log("Gagal memuat API dari Wikidata", err));
 }
 
 function displayArticleExtract(title, elem) {
